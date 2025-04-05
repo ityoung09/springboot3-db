@@ -1,100 +1,107 @@
-# SpringBoot 3 MongoDB 集成项目
+# Spring Boot 3 MongoDB 集成示例
 
-这是一个基于Spring Boot 3和MongoDB的企业级项目骨架，提供了完整的CRUD操作和标准化的项目结构。
-
-## 项目结构
-
-```
-com.kedaya.springboot3mongodb
-├── config                          # 配置类目录
-│   └── MongoConfig.java            # MongoDB配置类
-├── constant                        # 常量类目录
-│   └── MongoConstant.java          # MongoDB相关常量
-├── controller                      # 控制层
-│   └── api                         # API接口目录
-│       └── v1                      # 版本号
-│           └── UserController.java # 控制器类
-├── model                           # 模型层
-│   ├── dto                         # 数据传输对象
-│   │   └── UserDTO.java            # DTO类
-│   ├── entity                      # 实体类(文档模型)
-│   │   └── UserEntity.java         # 实体类
-│   ├── vo                          # 视图对象
-│   │   └── UserVO.java             # VO类
-│   └── mapper                      # 对象映射转换器
-│       └── UserMapper.java         # 映射类
-├── repository                      # MongoDB存储库接口层
-│   └── UserRepository.java         # 存储库接口
-├── service                         # 服务层
-│   ├── UserService.java            # 服务接口
-│   └── impl                        # 服务实现
-│       └── UserServiceImpl.java    # 服务实现类
-├── util                            # 工具类目录
-│   └── MongoUtil.java              # MongoDB工具类
-├── exception                       # 异常处理目录
-│   ├── GlobalExceptionHandler.java # 全局异常处理器
-│   └── UserNotFoundException.java  # 用户不存在异常
-└── Springboot3MongodbApplication.java # 主应用类
-```
-
-## 技术栈
-
-- Spring Boot 3.4.4
-- Spring Data MongoDB
-- Lombok
-- MapStruct
-- Docker
+本模块展示了Spring Boot 3与MongoDB的集成方式以及MongoDB的高级特性使用。
 
 ## 功能特性
 
-- 用户CRUD操作
-- 全局异常处理
-- MongoDB查询和更新工具类
-- 分层架构设计
-- Docker容器化支持
+### 1. 基础CRUD操作
+- 通过Spring Data MongoDB实现基础的增删改查
+- 支持自定义查询方法和MongoDB原生查询
 
-## 快速开始
+### 2. 索引优化
+- 单字段索引（@Indexed）
+- 唯一索引（@Indexed(unique = true)）
+- 复合索引（@CompoundIndex）
+- 后台创建索引（background = true）
 
-### 使用Docker启动MongoDB（开发环境）
+### 3. 聚合管道
+- 分组统计（按类别计算平均价格）
+- 条件查询（查找特定类别中最贵的产品）
+- 范围分组（按价格范围统计产品数量）
 
+### 4. 事务支持
+- 注解式事务（@Transactional）
+- 编程式事务（TransactionTemplate）
+- 事务回滚演示
+
+### 5. GridFS文件存储
+- 大文件上传与下载
+- 元数据管理
+- 按文件ID或文件名检索
+
+## 如何运行
+
+### 前置条件
+- JDK 17+
+- MongoDB 4.4+（事务功能需要副本集模式）
+- Maven 3.8+
+
+### 启动MongoDB（副本集模式）
 ```bash
-docker-compose up -d
+# 启动单节点副本集（用于测试）
+mongod --replSet rs0 --dbpath /data/db
+
+# 初始化副本集
+mongo
+> rs.initiate()
 ```
 
-### 构建并运行项目
-
+### 运行应用
 ```bash
-./mvnw clean package
-java -jar target/springboot3-mongodb-0.0.1-SNAPSHOT.jar
+# 构建并运行
+mvn spring-boot:run
 ```
 
 ## API接口
 
-### 用户管理
+### 产品管理
+- `GET /products` - 获取所有产品
+- `GET /products/{id}` - 获取单个产品
+- `POST /products` - 创建产品
+- `PUT /products/{id}` - 更新产品
+- `DELETE /products/{id}` - 删除产品
 
-| 方法   | URL                           | 描述               |
-|------|-------------------------------|------------------|
-| POST | /api/v1/users                 | 创建用户             |
-| PUT  | /api/v1/users/{id}            | 更新用户             |
-| DELETE | /api/v1/users/{id}          | 删除用户             |
-| GET  | /api/v1/users/{id}            | 获取单个用户           |
-| GET  | /api/v1/users/username/{username} | 根据用户名查询用户 |
-| GET  | /api/v1/users                 | 获取所有用户           |
-| GET  | /api/v1/users/age?minAge=18&maxAge=60 | 根据年龄范围查询用户 |
+### 聚合查询
+- `GET /products/aggregation/avgPriceByCategory` - 按类别获取平均价格
+- `GET /products/aggregation/topPriced/{category}/{limit}` - 获取类别中最贵的N个产品
+- `GET /products/aggregation/countByPriceRange` - 按价格范围分组统计
 
-## 配置多环境
+### 事务操作
+- `POST /products/batch` - 批量创建产品（事务）
+- `PUT /products/batch/price/{amount}` - 批量更新价格（事务）
+- `PUT /products/replace/{oldProductId}` - 替换产品（事务）
 
-项目包含开发环境和生产环境的配置文件：
+### 文件管理
+- `POST /files/upload` - 上传文件
+- `GET /files/download/{fileId}` - 下载文件（按ID）
+- `GET /files/download/byName/{filename}` - 下载文件（按文件名）
+- `DELETE /files/{fileId}` - 删除文件
 
-- `application.properties`: 通用配置
-- `application-dev.properties`: 开发环境配置
-- `application-prod.properties`: 生产环境配置
+## 配置说明
 
-## 注意事项
+应用配置位于`src/main/resources/application.properties`，主要配置项：
 
-- 默认激活开发环境配置
-- 生产环境部署时，使用以下命令指定环境：
+```properties
+# MongoDB连接配置
+spring.data.mongodb.uri=mongodb://localhost:27017/productdb
+spring.data.mongodb.auto-index-creation=true
 
-```bash
-java -jar -Dspring.profiles.active=prod target/springboot3-mongodb-0.0.1-SNAPSHOT.jar
-``` 
+# 文件上传配置
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+
+# 日志级别
+logging.level.org.springframework.data.mongodb.core.MongoTemplate=DEBUG
+```
+
+## 测试用例
+
+项目包含完整的单元测试，展示了如何测试MongoDB的各项功能：
+
+- 索引和基本查询测试
+- 聚合查询测试
+- 文件上传下载测试
+
+## 详细文档
+
+更多详细说明请参考[MongoDB高级特性使用指南](./docs/MongoDB高级特性使用指南.md) 

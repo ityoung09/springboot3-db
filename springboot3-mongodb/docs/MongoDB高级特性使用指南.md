@@ -7,8 +7,11 @@
 已在`application.properties`中配置了MongoDB连接：
 
 ```properties
-spring.data.mongodb.uri=mongodb://localhost:27017/productdb
-spring.data.mongodb.auto-index-creation=true
+spring.data.mongodb.host=156.238.252.42
+spring.data.mongodb.port=27017
+spring.data.mongodb.database=springboot3-mongodb
+spring.data.mongodb.username=mongo_G4Te3f
+spring.data.mongodb.password=mongo_mstssG
 ```
 
 ## 2. 索引优化
