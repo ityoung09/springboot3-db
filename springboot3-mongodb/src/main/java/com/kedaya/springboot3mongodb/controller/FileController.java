@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,16 +78,17 @@ public class FileController {
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String fileId) {
         try {
             GridFsResource resource = gridFsService.getFileById(fileId);
-            
+
             if (resource == null || !resource.exists()) {
                 return ResponseEntity.notFound().build();
             }
-            
+            // 获取文件大小，用于设置Content-Length
+            long contentLength = resource.contentLength();
             // 设置响应头
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(resource.getContentType()));
-            headers.setContentDispositionFormData("attachment", resource.getFilename());
-            
+            headers.setContentDispositionFormData("attachment", URLEncoder.encode(resource.getFilename(), StandardCharsets.UTF_8));
+            headers.setContentLength(contentLength);
             // 返回文件内容
             return ResponseEntity.ok()
                     .headers(headers)
@@ -112,7 +115,7 @@ public class FileController {
             // 设置响应头
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(resource.getContentType()));
-            headers.setContentDispositionFormData("attachment", resource.getFilename());
+            headers.setContentDispositionFormData("attachment", URLEncoder.encode(resource.getFilename(), StandardCharsets.UTF_8));
             
             // 返回文件内容
             return ResponseEntity.ok()
