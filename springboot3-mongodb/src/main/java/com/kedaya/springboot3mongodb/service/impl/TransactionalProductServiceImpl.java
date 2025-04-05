@@ -1,6 +1,6 @@
-package com.kedaya.springboot3mongodb.service;
+package com.kedaya.springboot3mongodb.service.impl;
 
-import com.kedaya.springboot3mongodb.model.Product;
+import com.kedaya.springboot3mongodb.model.entity.ProductEntity;
 import com.kedaya.springboot3mongodb.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.MongoTransactionManager;
@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Service
-public class TransactionalProductService {
+public class TransactionalProductServiceImpl {
 
     @Autowired
     private ProductRepository productRepository;
@@ -25,9 +25,9 @@ public class TransactionalProductService {
      * 批量添加产品，如果有任何一个失败，则全部回滚
      */
     @Transactional
-    public List<Product> batchCreateProducts(List<Product> products) {
+    public List<ProductEntity> batchCreateProducts(List<ProductEntity> productEntities) {
         // 在这个方法中的所有数据库操作都将在一个事务中
-        return productRepository.saveAll(products);
+        return productRepository.saveAll(productEntities);
     }
     
     /**
@@ -40,13 +40,13 @@ public class TransactionalProductService {
         transactionTemplate.execute(status -> {
             try {
                 for (String id : productIds) {
-                    Product product = productRepository.findById(id)
+                    ProductEntity productEntity = productRepository.findById(id)
                             .orElseThrow(() -> new RuntimeException("产品未找到：" + id));
                     
-                    BigDecimal newPrice = product.getPrice().add(increaseAmount);
-                    product.setPrice(newPrice);
+                    BigDecimal newPrice = productEntity.getPrice().add(increaseAmount);
+                    productEntity.setPrice(newPrice);
                     
-                    productRepository.save(product);
+                    productRepository.save(productEntity);
                 }
                 return null;
             } catch (Exception e) {
@@ -60,12 +60,12 @@ public class TransactionalProductService {
      * 组合操作：创建产品并删除过期产品
      */
     @Transactional
-    public Product replaceProduct(String oldProductId, Product newProduct) {
+    public ProductEntity replaceProduct(String oldProductId, ProductEntity newProductEntity) {
         // 删除旧产品
         productRepository.deleteById(oldProductId);
         
         // 创建新产品
-        return productRepository.save(newProduct);
+        return productRepository.save(newProductEntity);
         
         // 如果任一操作失败，两个操作都会回滚
     }

@@ -1,6 +1,6 @@
-package com.kedaya.springboot3mongodb.service;
+package com.kedaya.springboot3mongodb.service.impl;
 
-import com.kedaya.springboot3mongodb.model.Product;
+import com.kedaya.springboot3mongodb.model.entity.ProductEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class ProductAggregationService {
+public class ProductAggregationServiceImpl {
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -57,7 +57,7 @@ public class ProductAggregationService {
      * @param limit 返回结果数量
      * @return 产品列表
      */
-    public List<Product> getTopPricedProductsByCategory(String category, int limit) {
+    public List<ProductEntity> getTopPricedProductsByCategory(String category, int limit) {
         // 1. 定义匹配操作
         MatchOperation matchCategory = Aggregation.match(
                 Criteria.where("category").is(category));
@@ -76,8 +76,8 @@ public class ProductAggregationService {
         );
         
         // 5. 执行聚合操作
-        AggregationResults<Product> results = mongoTemplate.aggregate(
-                aggregation, "products", Product.class);
+        AggregationResults<ProductEntity> results = mongoTemplate.aggregate(
+                aggregation, "products", ProductEntity.class);
         
         return results.getMappedResults();
     }

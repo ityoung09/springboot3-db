@@ -1,9 +1,9 @@
 package com.kedaya.springboot3mongodb.controller;
 
-import com.kedaya.springboot3mongodb.model.Product;
+import com.kedaya.springboot3mongodb.model.entity.ProductEntity;
 import com.kedaya.springboot3mongodb.repository.ProductRepository;
-import com.kedaya.springboot3mongodb.service.ProductAggregationService;
-import com.kedaya.springboot3mongodb.service.TransactionalProductService;
+import com.kedaya.springboot3mongodb.service.impl.ProductAggregationServiceImpl;
+import com.kedaya.springboot3mongodb.service.impl.TransactionalProductServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,25 +25,25 @@ public class ProductController {
     private ProductRepository productRepository;
     
     @Autowired
-    private ProductAggregationService aggregationService;
+    private ProductAggregationServiceImpl aggregationService;
     
     @Autowired
-    private TransactionalProductService transactionalService;
+    private TransactionalProductServiceImpl transactionalService;
     
     /**
      * 创建新产品
      */
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        Product savedProduct = productRepository.save(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
+    public ResponseEntity<ProductEntity> createProduct(@RequestBody ProductEntity productEntity) {
+        ProductEntity savedProductEntity = productRepository.save(productEntity);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedProductEntity);
     }
     
     /**
      * 查询所有产品
      */
     @GetMapping
-    public List<Product> getAllProducts() {
+    public List<ProductEntity> getAllProducts() {
         return productRepository.findAll();
     }
     
@@ -51,8 +51,8 @@ public class ProductController {
      * 按ID查询产品
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable String id) {
-        Optional<Product> product = productRepository.findById(id);
+    public ResponseEntity<ProductEntity> getProductById(@PathVariable String id) {
+        Optional<ProductEntity> product = productRepository.findById(id);
         return product.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -61,7 +61,7 @@ public class ProductController {
      * 按类别查询产品
      */
     @GetMapping("/category/{category}")
-    public List<Product> getProductsByCategory(@PathVariable String category) {
+    public List<ProductEntity> getProductsByCategory(@PathVariable String category) {
         return productRepository.findByCategory(category);
     }
     
@@ -69,7 +69,7 @@ public class ProductController {
      * 按类别和最低价格查询产品
      */
     @GetMapping("/category/{category}/minPrice/{price}")
-    public List<Product> getProductsByCategoryAndMinPrice(
+    public List<ProductEntity> getProductsByCategoryAndMinPrice(
             @PathVariable String category,
             @PathVariable BigDecimal price) {
         return productRepository.findByCategoryAndPriceGreaterThan(category, price);
@@ -79,18 +79,18 @@ public class ProductController {
      * 更新产品
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(
+    public ResponseEntity<ProductEntity> updateProduct(
             @PathVariable String id, 
-            @RequestBody Product product) {
+            @RequestBody ProductEntity productEntity) {
         
         if (!productRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
         
-        product.setId(id);
-        Product updatedProduct = productRepository.save(product);
+        productEntity.setId(id);
+        ProductEntity updatedProductEntity = productRepository.save(productEntity);
         
-        return ResponseEntity.ok(updatedProduct);
+        return ResponseEntity.ok(updatedProductEntity);
     }
     
     /**
@@ -118,7 +118,7 @@ public class ProductController {
      * 聚合查询：获取某类别中最贵的N个产品
      */
     @GetMapping("/aggregation/topPriced/{category}/{limit}")
-    public List<Product> getTopPricedProductsByCategory(
+    public List<ProductEntity> getTopPricedProductsByCategory(
             @PathVariable String category,
             @PathVariable int limit) {
         return aggregationService.getTopPricedProductsByCategory(category, limit);
@@ -136,9 +136,9 @@ public class ProductController {
      * 使用事务批量创建产品
      */
     @PostMapping("/batch")
-    public ResponseEntity<List<Product>> batchCreateProducts(@RequestBody List<Product> products) {
-        List<Product> savedProducts = transactionalService.batchCreateProducts(products);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedProducts);
+    public ResponseEntity<List<ProductEntity>> batchCreateProducts(@RequestBody List<ProductEntity> productEntities) {
+        List<ProductEntity> savedProductEntities = transactionalService.batchCreateProducts(productEntities);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedProductEntities);
     }
     
     /**
@@ -157,15 +157,15 @@ public class ProductController {
      * 使用事务替换产品
      */
     @PutMapping("/replace/{oldProductId}")
-    public ResponseEntity<Product> replaceProduct(
+    public ResponseEntity<ProductEntity> replaceProduct(
             @PathVariable String oldProductId,
-            @RequestBody Product newProduct) {
+            @RequestBody ProductEntity newProductEntity) {
         
         if (!productRepository.existsById(oldProductId)) {
             return ResponseEntity.notFound().build();
         }
         
-        Product replacedProduct = transactionalService.replaceProduct(oldProductId, newProduct);
-        return ResponseEntity.ok(replacedProduct);
+        ProductEntity replacedProductEntity = transactionalService.replaceProduct(oldProductId, newProductEntity);
+        return ResponseEntity.ok(replacedProductEntity);
     }
 } 

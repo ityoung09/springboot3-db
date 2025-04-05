@@ -1,4 +1,4 @@
-package com.kedaya.springboot3mongodb.service;
+package com.kedaya.springboot3mongodb.service.impl;
 
 import com.mongodb.client.gridfs.model.GridFSFile;
 import org.bson.types.ObjectId;
@@ -20,7 +20,7 @@ import java.util.Map;
  * GridFS文件存储服务
  */
 @Service
-public class GridFsService {
+public class GridFsServiceImpl {
 
     @Autowired
     private GridFsTemplate gridFsTemplate;

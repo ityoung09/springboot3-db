@@ -1,6 +1,6 @@
 package com.kedaya.springboot3mongodb.controller;
 
-import com.kedaya.springboot3mongodb.service.GridFsService;
+import com.kedaya.springboot3mongodb.service.impl.GridFsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
@@ -23,7 +23,7 @@ import java.util.Map;
 public class FileController {
 
     @Autowired
-    private GridFsService gridFsService;
+    private GridFsServiceImpl gridFsService;
 
     /**
      * 上传文件
